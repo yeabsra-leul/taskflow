@@ -22,7 +22,6 @@ export type ListWithTasks = List & { tasks: Task[] };
 export interface Task {
   id: string;
   created_at: string;
-  updated_at: string;
   title: string;
   description: string | null;
   due_date: string | null;

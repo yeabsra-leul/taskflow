@@ -96,7 +96,8 @@ export function listService() {
     const { data, error } = await supabase
       .from("lists")
       .select()
-      .eq("board_id", boardId);
+      .eq("board_id", boardId)
+      .order("sort_order",{ascending:true})
 
     if (error) {
       if (error instanceof Error) {
@@ -119,7 +120,7 @@ export function taskService() {
     supabase: SupabaseClient;
     task: Omit<Task, "id" | "updated_at" | "created_at">;
   }): Promise<Task> => {
-    const { data, error } = await supabase.from("tasks").insert(task).select();
+    const { data, error } = await supabase.from("tasks").insert(task).select().single();
     if (error) {
       if (error instanceof Error) {
         throw error;
@@ -146,7 +147,26 @@ export function taskService() {
     return data || [];
   };
 
-  return { createTask, getTaskByBoardId };
+    const moveTask = async ({
+    supabase,
+    taskId,
+    toListId,
+    newOrder
+  }: {
+    supabase: SupabaseClient;
+    taskId:string, toListId:string, newOrder:number
+  }): Promise<Task> => {
+    const { data, error } = await supabase.from("tasks").update({list_id:toListId, sort_order:newOrder}).eq("id",taskId).select().single();
+    if (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to move task");
+    }
+    return data[0];
+  };
+
+  return { createTask, getTaskByBoardId, moveTask };
 }
 
 // board + column + task services

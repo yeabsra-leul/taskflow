@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { ReactNode, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -24,11 +24,11 @@ interface SideBarProps {
   children: ReactNode;
 }
 const SideBarWrapper = ({ children }: SideBarProps) => {
-  const params = useParams<{ id:string }>()
-  const boardId = params.id
-  const { board} = useBoard({boardId});
+  const params = useParams<{ id: string }>();
+  const boardId = params.id;
+  const { board } = useBoard({ boardId });
   // const [boardData, setboardData] = useState(board);
-  
+
   // console.log("board from sidebar",board)
   return (
     <SidebarProvider>
@@ -44,15 +44,18 @@ const SideBarWrapper = ({ children }: SideBarProps) => {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Boards
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">Boards</BreadcrumbLink>
                 </BreadcrumbItem>
-
-                <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{board?.title ?? "Loading..."}</BreadcrumbPage>
-                  </BreadcrumbItem>
+                {board?.title && (
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>
+                        {board?.title ?? "Loading..."}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
