@@ -29,12 +29,14 @@ function DroppableList({
   list,
   children,
   onCreateTask,
-  onEditCategory,
+  onEditList,
+  onDeleteList
 }: {
   list: ListWithTasks;
   children: ReactNode;
   onCreateTask?: () => void;
-  onEditCategory?: (category: ListWithTasks) => void;
+  onEditList: (list: ListWithTasks) => void;
+  onDeleteList:(list: ListWithTasks) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: list.id });
 
@@ -57,7 +59,7 @@ function DroppableList({
               <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                 {list.title}
               </h3>
-              <Badge variant="secondary" className="text-xs flex-shrink-0">
+              <Badge variant="secondary" className="text-xs flex-shrink-0 rounded-full">
                 {list.tasks.length}
               </Badge>
             </div>
@@ -73,12 +75,13 @@ function DroppableList({
               </DropdownMenuTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuContent>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem className="cursor-pointer" onClick={()=>onEditList(list)}>
                     Edit List
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     className="cursor-pointer"
+                    onClick={()=>onDeleteList(list)}
                   >
                     Delete List
                   </DropdownMenuItem>

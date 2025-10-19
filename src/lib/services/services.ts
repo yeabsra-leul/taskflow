@@ -86,6 +86,52 @@ export function listService() {
     return data[0];
   };
 
+  const updateList = async ({
+    supabase,
+    listId,
+    updatedTitle,
+  }: {
+    supabase: SupabaseClient;
+    listId: string;
+    updatedTitle: string;
+  }): Promise<List> => {
+    const { data, error } = await supabase
+      .from("lists")
+      .update({ title: updatedTitle })
+      .eq("id", listId)
+      .select()
+      .single();
+    if (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to update list");
+    }
+    return data[0];
+  };
+
+  const deleteList = async ({
+    supabase,
+    listId,
+  }: {
+    supabase: SupabaseClient;
+    listId: string;
+  }): Promise<List> => {
+    const { data, error } = await supabase
+      .from("lists")
+      .delete()
+      .eq("id", listId)
+      .select()
+      .single();
+    if (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to delete list");
+    }
+    return data[0];
+  };
+
   const getLists = async ({
     supabase,
     boardId,
@@ -97,7 +143,7 @@ export function listService() {
       .from("lists")
       .select()
       .eq("board_id", boardId)
-      .order("sort_order",{ascending:true})
+      .order("sort_order", { ascending: true });
 
     if (error) {
       if (error instanceof Error) {
@@ -108,7 +154,7 @@ export function listService() {
     return data;
   };
 
-  return { createList, getLists };
+  return { createList, getLists, updateList, deleteList };
 }
 
 //task service
@@ -120,7 +166,10 @@ export function taskService() {
     supabase: SupabaseClient;
     task: Omit<Task, "id" | "updated_at" | "created_at">;
   }): Promise<Task> => {
-    const { data, error } = await supabase.from("tasks").insert(task).select().single();
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert(task)
+      .select()
     if (error) {
       if (error instanceof Error) {
         throw error;
@@ -137,7 +186,11 @@ export function taskService() {
     supabase: SupabaseClient;
     boardId: string;
   }): Promise<Task[]> => {
-    const { data, error } = await supabase.from("tasks").select(`*, lists!inner(board_id)`).eq("lists.board_id",boardId).order("sort_order", {ascending:true});
+    const { data, error } = await supabase
+      .from("tasks")
+      .select(`*, lists!inner(board_id)`)
+      .eq("lists.board_id", boardId)
+      .order("sort_order", { ascending: true });
     if (error) {
       if (error instanceof Error) {
         throw error;
@@ -147,16 +200,23 @@ export function taskService() {
     return data || [];
   };
 
-    const moveTask = async ({
+  const moveTask = async ({
     supabase,
     taskId,
     toListId,
-    newOrder
+    newOrder,
   }: {
     supabase: SupabaseClient;
-    taskId:string, toListId:string, newOrder:number
+    taskId: string;
+    toListId: string;
+    newOrder: number;
   }): Promise<Task> => {
-    const { data, error } = await supabase.from("tasks").update({list_id:toListId, sort_order:newOrder}).eq("id",taskId).select().single();
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ list_id: toListId, sort_order: newOrder })
+      .eq("id", taskId)
+      .select()
+      .single();
     if (error) {
       if (error instanceof Error) {
         throw error;
@@ -232,12 +292,12 @@ export function boardDataService() {
       throw new Error("Board not found");
     }
 
-    const tasks = await taskService().getTaskByBoardId({supabase,boardId})
+    const tasks = await taskService().getTaskByBoardId({ supabase, boardId });
 
-    const listWithTasks = lists.map((list)=>({
+    const listWithTasks = lists.map((list) => ({
       ...list,
-      tasks:tasks.filter(task=>task.list_id === list.id)
-    }))
+      tasks: tasks.filter((task) => task.list_id === list.id),
+    }));
 
     return {
       board,

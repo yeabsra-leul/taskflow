@@ -11,16 +11,24 @@ import {
   PointerSensor,
   rectIntersection,
   useSensor,
-  useSensors
+  useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Loader2, Plus } from "lucide-react";
+import {
+  Filter,
+  Loader2,
+  MoreVertical,
+  OctagonAlert,
+  Plus,
+  Search,
+  User,
+} from "lucide-react";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { DroppableList, SortableTask, TaskOverlay } from "./dnd-helper-component";
+import { DroppableList, SortableTask, TaskOverlay } from "./dnd-helpers";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -42,12 +50,13 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-
-const priorityColors = {
-  low: "bg-blue-500/10 text-blue-700 border-blue-200",
-  medium: "bg-yellow-500/10 text-yellow-700 border-yellow-200",
-  high: "bg-red-500/10 text-red-700 border-red-200",
-};
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Badge } from "./ui/badge";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
@@ -59,16 +68,30 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     setLists,
     moveTask,
     createNewList,
+    updateList,
+    deleteList,
   } = useBoard({
     boardId,
   });
   const [isCreateTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const [isCreateListDialogOpen, setCreateListDialogOpen] = useState(false);
+  const [isEditListDialogOpen, setEditListDialogOpen] = useState(false);
+  const [isDeleteListDialogOpen, setDeleteListDialogOpen] = useState(false);
   const [isCreatingTask, setCreatingTask] = useState(false);
   const [isCreatingList, setCreatingList] = useState(false);
+  const [isUpdatingList, setUpdatingList] = useState(false);
+  const [isDeletingList, setDeletingList] = useState(false);
+  const [listToUpdate, setListToUpdate] = useState<ListWithTasks | null>(null);
+  const [listToDelete, setListToDelete] = useState<ListWithTasks | null>(null);
   const [title, setTitle] = useState("");
   const [newListTitle, setNewListTitle] = useState("");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [isFilterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    priority: [] as string[],
+    assignee: null as string | null,
+    dueDate: null as string | null,
+  });
 
   // sensors for better dnd detections
   const sensors = useSensors(
@@ -288,20 +311,174 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     }
   }
 
+  //update list
+  async function handleUpdateList(e: FormEvent) {
+    e.preventDefault();
+    setUpdatingList(true);
+    if (!newListTitle.trim()) {
+      return;
+    }
+    try {
+      await updateList({
+        updatedTitle: newListTitle,
+        listId: listToUpdate?.id as string,
+      });
+      setEditListDialogOpen(false);
+    } catch (error) {
+      toast.error("Error updating list");
+    } finally {
+      setUpdatingList(false);
+    }
+  }
+
+  // delete list from board
+  async function handleDeleteList() {
+    setDeletingList(true);
+    if (!listToDelete) {
+      return;
+    }
+
+    try {
+      await deleteList({
+        listId: listToDelete?.id as string,
+      });
+      setDeleteListDialogOpen(false);
+      toast.success("List deleted successfully");
+    } catch (error) {
+      toast.error("Error deleting list");
+    } finally {
+      setDeletingList(false);
+    }
+  }
+
+  // filter tasks
+  function handleFilterChange(
+    type: "priority" | "assignee" | "dueDate",
+    value: string | string[] | null
+  ) {
+    setFilters((prev) => ({ ...prev, [type]: value }));
+  }
+
+  // count filters selected
+  function getFiltersCount() {
+    return Object.values(filters).reduce(
+      (count, value) =>
+        count + (Array.isArray(value) ? value?.length : value != null ? 1 : 0),
+      0
+    );
+  }
+
+  const filteredLists = lists.map((list) => ({
+    ...list,
+    tasks: (list.tasks).filter((task) => {
+
+      console.log("tasks",list.tasks)
+      console.log("task",task)
+      //by priority
+      if (
+        filters.priority.length > 0 &&
+        !filters.priority.includes(task.priority)
+      ) {
+        return false;
+      }
+
+      // by due date
+      if (filters.dueDate && task.due_date) {
+        const filterDate = new Date(filters.dueDate).toDateString();
+        const taskDate = new Date(task.due_date).toDateString();
+        if (filterDate !== taskDate) {
+          return false;
+        }
+      }
+
+      return true;
+    }),
+  }));
+
   return (
-    <div className="flex-1 min-h-screen bg-gray-50">
+    <div className="flex-1 min-h-screen">
       {/* contents */}
-      <main className="container mx-auto w-full py-4 px-3 sm:px-5 sm:py-6">
-        <div className="flex justify-between">
-          {/* stats */}
+      <main className="container mx-auto w-full py-2 px-3 sm:px-5 sm:py-4">
+        {/* board info */}
+        <div className="flex justify-between mb-8">
           <div>
-            <span>Total tasks: </span>
-            {lists.reduce((acc, list) => acc + list.tasks.length, 0)}
+            <div className="text-2xl font-semibold text-gray-700">
+              {board?.title}
+            </div>
+            <div className="text-xs text-gray-500">{board?.description}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-sm cursor-pointer"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="cursor-pointer"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="cursor-pointer">
+                  Edit board
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  Archive board
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  className="cursor-pointer"
+                >
+                  Delete board
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 lg:flex-row lg:justify-between">
+          {/* Filters */}
+          <div className="flex flex-1 items-center gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search tasks..." className="pl-9" />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className={`relative cursor-pointer space-x-1 ${
+                getFiltersCount() > 0 &&
+                "bg-blue-100/80 border border-blue-200/80 hover:bg-blue-100"
+              }`}
+              onClick={() => setFilterOpen(true)}
+            >
+              <Filter className="h-3 w-3 mr-2" />
+              <span className="text-xs">Filters</span>
+              {getFiltersCount() > 0 && (
+                <Badge
+                  variant="secondary"
+                  className={`h-5 w-5 text-xs flex-shrink-0 rounded-full, ${
+                    getFiltersCount() > 0 &&
+                    "bg-blue-100/80 border border-blue-200/80"
+                  }`}
+                >
+                  {getFiltersCount()}
+                </Badge>
+              )}
+            </Button>
           </div>
 
           <Button
             onClick={() => setCreateTaskDialogOpen(true)}
-            className="cursor-pointer"
+            className="cursor-pointer max-w-[540px]"
+            size={"sm"}
           >
             <Plus />
             Add Task
@@ -318,11 +495,20 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
         >
           <div className="w-full overflow-x-auto lg:px-2 lg:-mx-2">
             <div className="pt-4 flex flex-col lg:flex-row lg:space-x-6 lg:overflow-x-auto lg:pb-6 lg:px-2 lg:-mx-2 lg:[&::-webkit-scrollbar]:h-2 lg:[&::-webkit-scrollbar-track]:bg-gray-100 lg:[&::-webkit-scrollbar-thumb]:bg-gray-300 lg:[&::-webkit-scrollbar-thumb]:rounded-full space-y-4 lg:space-y-0">
-              {lists.map((list, key) => (
+              {filteredLists.map((list, key) => (
                 <DroppableList
                   key={key}
                   list={list}
                   onCreateTask={() => setCreateTaskDialogOpen(true)}
+                  onEditList={(list) => {
+                    setEditListDialogOpen(true);
+                    setListToUpdate(list);
+                    setNewListTitle(list.title);
+                  }}
+                  onDeleteList={(list) => {
+                    setDeleteListDialogOpen(true);
+                    setListToDelete(list);
+                  }}
                 >
                   <SortableContext
                     items={list.tasks.map((task) => task.id)}
@@ -461,20 +647,37 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
 
       {/* create new list dialog */}
       <Dialog
-        open={isCreateListDialogOpen}
-        onOpenChange={setCreateListDialogOpen}
+        open={isCreateListDialogOpen || isEditListDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditListDialogOpen(false);
+            setCreateListDialogOpen(false);
+            setNewListTitle("");
+          }
+        }}
       >
         <DialogContent className="w-[95vw] max-w-[425px] mx-auto">
           <DialogHeader>
-            <DialogTitle>Create New List</DialogTitle>
+            <DialogTitle>
+              {isEditListDialogOpen ? "Update " : "Create New "}
+              List
+            </DialogTitle>
             <p className="text-sm text-gray-600">
-              Add new list to organize your tasks
+              {isEditListDialogOpen
+                ? "Update the detail of your list"
+                : "Add new list to organize your tasks"}
             </p>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={handleCreateList}>
+          <form
+            className="space-y-4"
+            onSubmit={(e) =>
+              isEditListDialogOpen ? handleUpdateList(e) : handleCreateList(e)
+            }
+          >
             <div className="space-y-2">
               <Label>List Title</Label>
               <Input
+                type="text"
                 id="columnTitle"
                 value={newListTitle}
                 onChange={(e) => setNewListTitle(e.target.value)}
@@ -485,7 +688,11 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
             <div className="space-x-2 flex justify-end">
               <Button
                 type="button"
-                onClick={() => setCreateListDialogOpen(false)}
+                onClick={() => {
+                  setCreateListDialogOpen(false);
+                  setEditListDialogOpen(false);
+                  setNewListTitle("");
+                }}
                 variant="outline"
                 className="cursor-pointer"
               >
@@ -494,13 +701,132 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
               <Button
                 type="submit"
                 className="cursor-pointer"
-                disabled={!newListTitle || isCreatingList}
+                disabled={!newListTitle || isCreatingList || isUpdatingList}
               >
-                {isCreatingList && <Loader2 className="animate-spin" />}
-                Create List
+                {(isCreatingList || isUpdatingList) && (
+                  <Loader2 className="animate-spin" />
+                )}
+                {isEditListDialogOpen ? "Update List" : "Create List"}
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* delete list confirmation dialog */}
+      <Dialog
+        open={isDeleteListDialogOpen}
+        onOpenChange={setDeleteListDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <span>Delete list</span>{" "}
+              <OctagonAlert className="h-5 w-5 text-red-600" />
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this list? This action cannot be
+              undone. All tasks inside the list will be permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteListDialogOpen(false)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="cursor-pointer"
+              variant="destructive"
+              onClick={handleDeleteList}
+            >
+              {isDeletingList && <Loader2 className="animate-spin" />}
+              Delete List
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* fitlers dialog */}
+      <Dialog open={isFilterOpen} onOpenChange={setFilterOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <span>Filter Tasks</span>
+            </DialogTitle>
+            <DialogDescription>
+              Filter tasks by priority, assignee or due date
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* filters */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="dueDate" className="text-sm font-medium">
+                Priority
+              </Label>
+              <div className="space-x-2">
+                {["low", "medium", "high"].map((priority, key) => (
+                  <Button
+                    key={key}
+                    size="sm"
+                    className="capitalize rounded-sm text-xs cursor-pointer"
+                    variant={
+                      filters.priority.includes(priority)
+                        ? "default"
+                        : "outline"
+                    }
+                    onClick={() => {
+                      const newPriorities = filters.priority.includes(priority)
+                        ? filters.priority.filter((pr) => pr !== priority)
+                        : [...filters.priority, priority];
+                      handleFilterChange("priority", newPriorities);
+                    }}
+                  >
+                    {priority}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dueDate" className="text-sm font-medium">
+                Due date
+              </Label>
+              <Input
+                type="date"
+                value={filters.dueDate || ""}
+                onChange={(e) =>
+                  handleFilterChange("dueDate", e.currentTarget.value)
+                }
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4 flex justify-between w-full">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setFilters({
+                  priority: [] as string[],
+                  assignee: null as string | null,
+                  dueDate: null as string | null,
+                })
+              }
+              className="cursor-pointer"
+            >
+              Reset
+            </Button>
+            <Button
+              className="cursor-pointer"
+              onClick={() => setFilterOpen(false)}
+            >
+              Apply Filters
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

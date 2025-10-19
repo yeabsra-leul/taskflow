@@ -197,6 +197,7 @@ export function useBoard({ boardId }: { boardId: string }) {
       );
     }
   }
+
   async function createNewList({ listTitle }: { listTitle: string }) {
     if (!board || !user) {
       throw new Error("Board not found");
@@ -221,6 +222,59 @@ export function useBoard({ boardId }: { boardId: string }) {
     }
   }
 
+  async function updateList({
+    updatedTitle,
+    listId,
+  }: {
+    updatedTitle: string;
+    listId: string;
+  }) {
+    if (!board || !user) {
+      throw new Error("Board not found");
+    }
+
+    try {
+      const updatedList = await listService().updateList({
+        supabase: supabase!,
+        listId,
+        updatedTitle,
+      });
+      setLists((prev) =>
+        prev.map((list) =>
+          list.id === listId ? { ...list, title: updatedTitle } : list
+        )
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to update the list"
+      );
+    }
+  }
+
+  async function deleteList({
+    listId,
+  }: {
+    listId: string;
+  }) {
+    if (!board || !user) {
+      throw new Error("Board not found");
+    }
+
+    try {
+      await listService().deleteList({
+        supabase: supabase!,
+        listId,
+      });
+      setLists((prev) =>
+        prev.filter((list)=>list.id !== listId)
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete the list"
+      );
+    }
+  }
+
   return {
     board,
     lists,
@@ -231,5 +285,7 @@ export function useBoard({ boardId }: { boardId: string }) {
     setLists,
     moveTask,
     createNewList,
+    updateList,
+    deleteList
   };
 }
