@@ -2,53 +2,52 @@
 
 import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { createContext } from "react";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { useSession } from "@clerk/nextjs";
+import { createClient, SupabaseClient, Session } from "@supabase/supabase-js";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-type SupabaseContext = {
+type SupabaseContextType = {
   supabase: SupabaseClient | null;
+  session: Session | null;
   isLoaded: boolean;
 };
 
-const Context = createContext<SupabaseContext>({
-  supabase: null,
-  isLoaded: false,
-});
+const Context = createContext<SupabaseContextType | undefined>(undefined);
 
 export const SupabaseProvider = ({ children }: { children: ReactNode }) => {
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-  const [isLoaded, setLoaded] = useState<boolean>(false);
+  const [supabase] = useState(() =>
+    createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    )
+  );
 
-  const { session } = useSession();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!session) {
-      setSupabase(null);
-      setLoaded(true);
-      return;
-    }
+    // Get initial session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setIsLoaded(true);
+    });
 
-    const client = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        accessToken: () => session.getToken(),
-      }
-    );
+    // Listen for auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-    setSupabase(client);
-    setLoaded(true);
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
-    console.log("isloaded", isLoaded);
-  }, [session]);
   return (
-    <Context.Provider value={{ supabase, isLoaded }}>
+    <Context.Provider value={{ supabase, session, isLoaded }}>
       {isLoaded ? (
         children
       ) : (
         <div className="min-h-screen w-full flex items-center justify-center">
-          <LoadingSpinner />
+          {/* <LoadingSpinner text="Loading..."/> */}
         </div>
       )}
     </Context.Provider>
@@ -57,10 +56,6 @@ export const SupabaseProvider = ({ children }: { children: ReactNode }) => {
 
 export function useSupabase() {
   const context = useContext(Context);
-
-  if (context === undefined) {
-    throw Error("Please access useSupabase only inside the provider");
-  }
-
+  if (!context) throw new Error("useSupabase must be used within SupabaseProvider");
   return context;
 }

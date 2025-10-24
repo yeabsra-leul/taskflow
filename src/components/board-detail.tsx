@@ -57,6 +57,9 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
+import { Card, CardContent } from "./ui/card";
+import { Skeleton } from "./ui/skeleton";
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
@@ -149,7 +152,7 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     }
   };
 
-  //handler for when a users start dragging a car
+  //handler for when a users start dragging a card
   function handleDragStart(event: DragStartEvent) {
     const taskId = event.active.id as string;
     const task = lists
@@ -370,10 +373,9 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
 
   const filteredLists = lists.map((list) => ({
     ...list,
-    tasks: (list.tasks).filter((task) => {
-
-      console.log("tasks",list.tasks)
-      console.log("task",task)
+    tasks: list.tasks.filter((task) => {
+      console.log("tasks", list.tasks);
+      console.log("task", task);
       //by priority
       if (
         filters.priority.length > 0 &&
@@ -401,12 +403,22 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
       <main className="container mx-auto w-full py-2 px-3 sm:px-5 sm:py-4">
         {/* board info */}
         <div className="flex justify-between mb-8">
-          <div>
-            <div className="text-2xl font-semibold text-gray-700">
-              {board?.title}
+          {loadingBoard ? (
+            <div className="w-full">
+              {/* More prominent text skeletons */}
+              <div className="grid flex-1 text-left text-sm leading-tight space-y-2">
+                <Skeleton className="h-5 w-32 bg-primary/30 rounded-md" />
+                <Skeleton className="h-4 w-40 bg-primary/20 rounded-md" />
+              </div>
             </div>
-            <div className="text-xs text-gray-500">{board?.description}</div>
-          </div>
+          ) : (
+            <div>
+              <div className="text-2xl font-semibold text-gray-700">
+                {board?.title}
+              </div>
+              <div className="text-xs text-gray-500">{board?.description}</div>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -486,60 +498,66 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
         </div>
 
         {/* task categories */}
-        <DndContext
-          // sensors={}
-          collisionDetection={rectIntersection}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="w-full overflow-x-auto lg:px-2 lg:-mx-2">
-            <div className="pt-4 flex flex-col lg:flex-row lg:space-x-6 lg:overflow-x-auto lg:pb-6 lg:px-2 lg:-mx-2 lg:[&::-webkit-scrollbar]:h-2 lg:[&::-webkit-scrollbar-track]:bg-gray-100 lg:[&::-webkit-scrollbar-thumb]:bg-gray-300 lg:[&::-webkit-scrollbar-thumb]:rounded-full space-y-4 lg:space-y-0">
-              {filteredLists.map((list, key) => (
-                <DroppableList
-                  key={key}
-                  list={list}
-                  onCreateTask={() => setCreateTaskDialogOpen(true)}
-                  onEditList={(list) => {
-                    setEditListDialogOpen(true);
-                    setListToUpdate(list);
-                    setNewListTitle(list.title);
-                  }}
-                  onDeleteList={(list) => {
-                    setDeleteListDialogOpen(true);
-                    setListToDelete(list);
-                  }}
-                >
-                  <SortableContext
-                    items={list.tasks.map((task) => task.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-4">
-                      {list.tasks.map((task, key) => (
-                        <SortableTask key={key} task={task} />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DroppableList>
-              ))}
-              {/* add new list */}
-              <div className="w-full lg:flex-shrink-0 lg:w-80">
-                <Button
-                  variant="outline"
-                  className="cursor-pointer w-full h-full min-h-[200px] border-dashed border-2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setCreateListDialogOpen(true)}
-                >
-                  <Plus />
-                  Add another list
-                </Button>
-              </div>
-
-              <DragOverlay>
-                {activeTask && <TaskOverlay task={activeTask} />}
-              </DragOverlay>
-            </div>
+        {loadingBoard ? (
+          <div className="w-full h-full min-h-[200px] py-10 flex justify-center">
+            <LoadingSpinner text="Loading your tasks..." />
           </div>
-        </DndContext>
+        ) : (
+          <DndContext
+            // sensors={}
+            collisionDetection={rectIntersection}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="w-full overflow-x-auto lg:px-2 lg:-mx-2">
+              <div className="pt-4 flex flex-col lg:flex-row lg:space-x-6 lg:overflow-x-auto lg:pb-6 lg:px-2 lg:-mx-2 lg:[&::-webkit-scrollbar]:h-2 lg:[&::-webkit-scrollbar-track]:bg-gray-100 lg:[&::-webkit-scrollbar-thumb]:bg-gray-300 lg:[&::-webkit-scrollbar-thumb]:rounded-full space-y-4 lg:space-y-0">
+                {filteredLists.map((list, key) => (
+                  <DroppableList
+                    key={key}
+                    list={list}
+                    onCreateTask={() => setCreateTaskDialogOpen(true)}
+                    onEditList={(list) => {
+                      setEditListDialogOpen(true);
+                      setListToUpdate(list);
+                      setNewListTitle(list.title);
+                    }}
+                    onDeleteList={(list) => {
+                      setDeleteListDialogOpen(true);
+                      setListToDelete(list);
+                    }}
+                  >
+                    <SortableContext
+                      items={list.tasks.map((task) => task.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-4">
+                        {list.tasks.map((task, key) => (
+                          <SortableTask key={key} task={task} />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DroppableList>
+                ))}
+                {/* add new list */}
+                <div className="w-full lg:flex-shrink-0 lg:w-80">
+                  <Button
+                    variant="outline"
+                    className="cursor-pointer w-full h-full min-h-[200px] border-dashed border-2 text-gray-500 hover:text-gray-700"
+                    onClick={() => setCreateListDialogOpen(true)}
+                  >
+                    <Plus />
+                    Add another list
+                  </Button>
+                </div>
+
+                <DragOverlay>
+                  {activeTask && <TaskOverlay task={activeTask} />}
+                </DragOverlay>
+              </div>
+            </div>
+          </DndContext>
+        )}
       </main>
 
       {/* create task dialog */}

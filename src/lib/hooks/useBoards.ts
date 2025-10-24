@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { Board, List, ListWithTasks, Task } from "../supabase/models";
 import {
@@ -10,9 +9,10 @@ import {
   taskService,
 } from "../services/services";
 import { useEffect, useState } from "react";
+import { useAuth } from "./useAuth";
 
 export function useBoards() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { supabase } = useSupabase();
   const [boards, setBoards] = useState<Board[]>([]);
   const [loadingBoards, setLoadingBoards] = useState<boolean>(true);
@@ -22,6 +22,7 @@ export function useBoards() {
     if (user) {
       loadBoards();
     }
+    console.log("suppppp",supabase)
   }, [user, supabase]);
 
   async function loadBoards() {
@@ -35,7 +36,7 @@ export function useBoards() {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError("Failed to create board");
+        setError("Failed to load board");
       }
     } finally {
       setLoadingBoards(false);
@@ -55,7 +56,7 @@ export function useBoards() {
     try {
       const newBoard = await boardDataService().createBoardWithList({
         supabase: supabase!,
-        board: { ...board, user_id: user?.id as string },
+        board: { ...board, user_id: user?.user_id as string },
       });
 
       setBoards((prev) => [newBoard, ...prev]);
@@ -73,7 +74,7 @@ export function useBoards() {
 
 export function useBoard({ boardId }: { boardId: string }) {
   const { supabase } = useSupabase();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [board, setBoard] = useState<Board | null>(null);
   const [lists, setLists] = useState<ListWithTasks[]>([]);
   const [loadingBoard, setLoadingBoard] = useState<boolean>(true);
@@ -207,7 +208,7 @@ export function useBoard({ boardId }: { boardId: string }) {
       const newList = {
         title: listTitle,
         board_id: board.id,
-        user_id: user.id,
+        user_id: user.user_id,
         sort_order: lists.length,
       };
       const createdList = await listService().createList({

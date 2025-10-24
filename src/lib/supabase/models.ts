@@ -1,3 +1,5 @@
+import { Database } from "@/lib/supabase/database.types";
+
 export interface Board {
   id: string;
   created_at: string;
@@ -30,3 +32,12 @@ export interface Task {
   assignee: string | null;
   list_id: string;
 }
+
+// Database Models
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+
+// Extended User type that includes additional fields not in the database
+export type User = Profile & {
+  email: string;
+  boards_created: number;
+};

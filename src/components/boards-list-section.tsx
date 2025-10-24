@@ -32,17 +32,31 @@ import { colorOptions } from "@/lib/constants";
 import { toast } from "sonner";
 import { LoadingSpinner } from "./ui/loading-spinner";
 import Link from "next/link";
+import { Board } from "@/lib/supabase/models";
 
 const BoardsListSection = () => {
   const [viewMode, setviewMode] = useState<"grid" | "list">("grid");
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const [isCreatingBoard, setCreatingBoard] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     color: "blue-500",
   });
   const { createBoard, boards, error, loadingBoards } = useBoards();
+  const [filters, setFilters] = useState({
+    search: "",
+    dateRange: {
+      start: null as string | null,
+      end: null as string | null,
+    },
+    taskCount: {
+      min: null as number | null,
+      max: null as number | null,
+    },
+  });
   console.log("boards", boards);
 
   const handleCreateBoard = async () => {
@@ -61,6 +75,40 @@ const BoardsListSection = () => {
       setCreatingBoard(false);
     }
   };
+
+  function clearFilters() {
+    setFilters({
+      search: "",
+      dateRange: {
+        start: null as string | null,
+        end: null as string | null,
+      },
+      taskCount: {
+        min: null as number | null,
+        max: null as number | null,
+      },
+    });
+  }
+
+  // const boardsWithTaskCount = boards.map((board: Board) => ({
+  //   ...board,
+  //   taskCount: 0, // This would need to be calculated from actual data
+  // }));
+
+  const filteredBoards = boards.filter((board: Board) => {
+    const matchesSearch = board.title
+      .toLowerCase()
+      .includes(filters.search.toLowerCase());
+
+    const matchesDateRange =
+      (!filters.dateRange.start ||
+        new Date(board.created_at) >= new Date(filters.dateRange.start)) &&
+      (!filters.dateRange.end ||
+        new Date(board.created_at) <= new Date(filters.dateRange.end));
+
+    return matchesSearch && matchesDateRange;
+  });
+
   return (
     <div className="mt-6">
       {/* headers */}
@@ -98,6 +146,7 @@ const BoardsListSection = () => {
             <Button
               variant="secondary"
               className="cursor-pointer border border-gray-100 flex-1"
+              onClick={() => setIsFilterOpen(true)}
             >
               <Funnel className="h-4 w-4" />
               Filters
@@ -120,6 +169,9 @@ const BoardsListSection = () => {
           <Input
             className="rounded-md bg-gray-50 max-w-full sm:max-w-xl font-medium text-xs placeholder:text-muted-foreground/50 pl-8"
             placeholder="Search boards..."
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, search: e.target.value }))
+            }
           />
         </div>
       </div>
@@ -129,52 +181,52 @@ const BoardsListSection = () => {
         </div>
       ) : viewMode == "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          {boards.map((board) => (
+          {filteredBoards.map((board) => (
             <Link key={board.id} href={`/boards/${board.id}`}>
+              <Card className="group overflow-hidden relative border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md">
+                {/* color */}
+                <div
+                  className={`h-[5] w-full absolute top-0 left-0 rounded-t-md`}
+                  style={{ backgroundColor: board.color }}
+                />
 
-            <Card
-              className="group overflow-hidden relative border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md"
-            >
-              {/* color */}
-              <div
-                className={`h-[5] w-full absolute top-0 left-0 rounded-t-md`}
-                style={{ backgroundColor: board.color }}
-              />
-
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {board.title}
-                  </CardTitle>
-                  <Badge variant="secondary" className="shrink-0 text-xs">
-                    New
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                  {board.description}
-                </p>
-
-                <div className="flex flex-col gap-2 pt-2 border-t border-border">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>
-                      Created {format(board.created_at, "MMM d, yyyy")}
-                    </span>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {board.title}
+                    </CardTitle>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 text-xs rounded-sm bg-gray-50"
+                    >
+                      New
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>
-                      Updated{" "}
-                      {formatDistanceToNow(parseISO(board.updated_at), {
-                        addSuffix: true,
-                      })}
-                    </span>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                    {board.description}
+                  </p>
+
+                  <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>
+                        Created {format(board.created_at, "MMM d, yyyy")}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>
+                        Updated{" "}
+                        {formatDistanceToNow(parseISO(board.updated_at), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </Link>
           ))}
 
@@ -195,12 +247,10 @@ const BoardsListSection = () => {
           </Card>
         </div>
       ) : (
-        <div className="space-y-4 mt-8">
+        <div className="flex flex-col gap-4 mt-8">
           {boards.map((board) => (
             <Link key={board.id} href={`/boards/${board.id}`}>
-              <Card
-                className="group relative overflow-hidden border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md py-3"
-              >
+              <Card className="group relative overflow-hidden border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md py-3">
                 <div
                   className={`absolute left-0 top-0 bottom-0 w-[5] bg-${board.color}`}
                   style={{ backgroundColor: board.color }}
@@ -213,7 +263,10 @@ const BoardsListSection = () => {
                         <h3 className="text-xl font-semibold text-foreground">
                           {board.title}
                         </h3>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="outline"
+                          className="text-xs rounded-sm bg-gray-50"
+                        >
                           New
                         </Badge>
                       </div>
@@ -366,6 +419,112 @@ const BoardsListSection = () => {
               Create Board
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Filter Dialog */}
+      <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <DialogContent className="w-[95vw] max-w-[425px] mx-auto">
+          <DialogHeader>
+            <DialogTitle>Filter Boards</DialogTitle>
+            <p className="text-sm text-gray-600">
+              Filter boards by title, date, or task count.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Search</Label>
+              <Input
+                id="search"
+                placeholder="Search board titles..."
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Date Range</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Start Date</Label>
+                  <Input
+                    type="date"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        dateRange: {
+                          ...prev.dateRange,
+                          start: e.target.value || null,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">End Date</Label>
+                  <Input
+                    type="date"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        dateRange: {
+                          ...prev.dateRange,
+                          end: e.target.value || null,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Task Count</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Minimum</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Min tasks"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        taskCount: {
+                          ...prev.taskCount,
+                          min: e.target.value ? Number(e.target.value) : null,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Maximum</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Max tasks"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        taskCount: {
+                          ...prev.taskCount,
+                          max: e.target.value ? Number(e.target.value) : null,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between pt-4 space-y-2 sm:space-y-0 sm:space-x-2">
+              <Button variant="outline" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+              <Button onClick={() => setIsFilterOpen(false)}>
+                Apply Filters
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

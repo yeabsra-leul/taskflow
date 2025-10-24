@@ -1,9 +1,8 @@
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { SupabaseProvider } from "@/lib/supabase/SupabaseProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-
+import { RouteGuard } from "@/components/RouteGuard";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,9 +17,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClerkProvider>
-            <SupabaseProvider>{children}</SupabaseProvider>
-          </ClerkProvider>
+          <SupabaseProvider>
+            <RouteGuard>{children}</RouteGuard>
+          </SupabaseProvider>
           <Toaster richColors />
         </ThemeProvider>
       </body>
