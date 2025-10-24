@@ -23,7 +23,7 @@ export default function ConfirmEmailPage() {
         {/* Content */}
         <div className="text-center space-y-3 mb-8">
           <h1 className="text-3xl font-bold text-foreground">Account Created!</h1>
-          <p className="text-lg text-muted-foreground">We're excited to have you on board.</p>
+          <p className="text-lg text-muted-foreground">We&apos;re excited to have you on board.</p>
         </div>
 
         {/* Email Card */}
@@ -67,7 +67,7 @@ export default function ConfirmEmailPage() {
                 <span className="text-xs font-semibold text-primary">3</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">You're all set!</p>
+                <p className="text-sm font-medium text-foreground">You&apos;re all set!</p>
                 <p className="text-xs text-muted-foreground">Start using your account</p>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function ConfirmEmailPage() {
             </Link>
           </Button>
           <p className="text-xs text-center text-muted-foreground">
-            Didn't receive the email?{" "}
+            Didn&apos;t receive the email?{" "}
             <button className="text-primary hover:underline font-medium">Resend confirmation</button>
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function ConfirmEmailPage() {
         {/* Help Text */}
         <div className="mt-8 pt-6 border-t border-border">
           <p className="text-xs text-muted-foreground text-center">
-            Check your spam folder if you don't see the email within a few minutes.
+            Check your spam folder if you don&apos;t see the email within a few minutes.
           </p>
         </div>
       </div>

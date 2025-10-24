@@ -45,7 +45,7 @@ const BoardsListSection = () => {
     description: "",
     color: "blue-500",
   });
-  const { createBoard, boards, error, loadingBoards } = useBoards();
+  const { createBoard, boards, loadingBoards } = useBoards();
   const [filters, setFilters] = useState({
     search: "",
     dateRange: {

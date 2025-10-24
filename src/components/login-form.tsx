@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,11 +11,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/hooks/useAuth";
-import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { FormEvent } from "react";
 import { toast } from "sonner";
-import Image from "next/image";
 
 export function LoginForm({
   className,
@@ -27,13 +26,8 @@ export function LoginForm({
     password,
     handleLogin,
     handleGoogleLogin,
-    handleSignup,
     setEmail,
     setPassword,
-    error,
-    isSignUpMode,
-    setIsSignUpMode,
-    clearError,
     isLoggingIn,
   } = useAuth();
 
@@ -42,8 +36,12 @@ export function LoginForm({
     try {
       await handleLogin(e);
       toast.success("Logged in successfully.");
-    } catch (error: any) {
-      toast.error(`Error logging in: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(`Error logging in: ${error.message}`);
+      } else {
+        toast.error("Error logging in");
+      }
     }
   }
 

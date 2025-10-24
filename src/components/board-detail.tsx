@@ -29,6 +29,7 @@ import {
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { DroppableList, SortableTask, TaskOverlay } from "./dnd-helpers";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -38,8 +39,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { LoadingSpinner } from "./ui/loading-spinner";
 import {
   Select,
   SelectContent,
@@ -49,22 +57,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Textarea } from "./ui/textarea";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Badge } from "./ui/badge";
-import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { LoadingSpinner } from "./ui/loading-spinner";
+import { Textarea } from "./ui/textarea";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
     board,
-    error,
     loadingBoard,
     lists,
     createNewTask,

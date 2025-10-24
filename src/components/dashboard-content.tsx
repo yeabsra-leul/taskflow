@@ -1,24 +1,21 @@
 "use client";
 
-import { useBoards } from "@/lib/hooks/useBoards";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import {
-  LayoutGrid,
-  FolderKanban,
-  Archive,
-  Users,
-  Grid3X3,
-  List,
-} from "lucide-react";
-import { Button } from "./ui/button";
-import BoardsListSection from "./boards-list-section";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useBoards } from "@/lib/hooks/useBoards";
+import {
+  Archive,
+  FolderKanban,
+  LayoutGrid,
+  Users
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import BoardsListSection from "./boards-list-section";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 
 const DashboardContent = () => {
-  const { createBoard, boards, error, loadingBoards } = useBoards();
+  const { boards, error, loadingBoards } = useBoards();
   const [showToast, setShowToast] = useState(false);
   const { user, isLoading } = useAuth();
 
