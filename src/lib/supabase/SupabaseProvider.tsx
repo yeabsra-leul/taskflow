@@ -4,6 +4,8 @@ import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { createContext } from "react";
 import { createClient, SupabaseClient, Session } from "@supabase/supabase-js";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useSyncWorkspaceFromUrl } from "../hooks/useSyncWorkspaceFromUrl";
+import { RouteGuard } from "@/components/RouteGuard";
 
 type SupabaseContextType = {
   supabase: SupabaseClient | null;
@@ -32,9 +34,11 @@ export const SupabaseProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
 
     return () => {
       listener.subscription.unsubscribe();
@@ -56,6 +60,18 @@ export const SupabaseProvider = ({ children }: { children: ReactNode }) => {
 
 export function useSupabase() {
   const context = useContext(Context);
-  if (!context) throw new Error("useSupabase must be used within SupabaseProvider");
+  if (!context)
+    throw new Error("useSupabase must be used within SupabaseProvider");
   return context;
+}
+
+//sync workspace from url and guard routes
+export function SyncWorkspaceAndGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  useSyncWorkspaceFromUrl();
+
+  return <RouteGuard>{children}</RouteGuard>;
 }

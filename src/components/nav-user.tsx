@@ -30,6 +30,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Skeleton } from "./ui/skeleton";
 import { useSubscription } from "@/lib/hooks/useSubscription";
+import Link from "next/link";
 
 export function NavUser({
   user,
@@ -140,24 +141,27 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => manageSubscription(session?.access_token)}
-              >
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/pricing"
+                  className="no-underline cursor-pointer"
+                >
+                  <Sparkles />
+                  Upgrade Plan
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem disabled>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem disabled>
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem disabled>
                 <Bell />
                 Notifications
               </DropdownMenuItem>

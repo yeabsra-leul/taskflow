@@ -5,9 +5,11 @@ import { User } from "../supabase/models";
 import { UseAuthReturn } from "@/types/auth";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { redirect } from "next/navigation";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 export function useAuth(): UseAuthReturn {
   const { supabase } = useSupabase();
+  const {activeWorkspace} = useWorkspaceStore()
 
   if (!supabase) {
     throw new Error("Supabase client is not initialized yet");
@@ -25,6 +27,7 @@ export function useAuth(): UseAuthReturn {
   const [isLoggingIn, setLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+
 
   // Helper functions
   const clearError = () => setError(null);
@@ -55,6 +58,17 @@ export function useAuth(): UseAuthReturn {
       setIsLoading(false);
     }
   };
+
+  const checkCurrentUserPlan = (plan: string) => {
+    let subscriptionPlan: "free" | "premium" | "enterprise" | null = null;
+
+    if (user) {
+      subscriptionPlan =
+        (user.subscription_plan as "free" | "premium" | "enterprise") || "free";
+    }
+    
+    return subscriptionPlan === plan;
+  }
 
   const updateSessionState = async (newSession: any) => {
     setSession(newSession);
@@ -118,7 +132,7 @@ export function useAuth(): UseAuthReturn {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/w/${activeWorkspace?.slug}`,
         },
       });
     } catch (error: any) {
@@ -134,7 +148,9 @@ export function useAuth(): UseAuthReturn {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/` },
+        options: { 
+          emailRedirectTo: `${window.location.origin}/w/${activeWorkspace?.slug}` 
+        },
       });
 
       if (error) {
@@ -142,7 +158,7 @@ export function useAuth(): UseAuthReturn {
       } else {
         setError("Please check your email to confirm your account");
         // Redirect user to the confirmation page on successful signup
-        window.location.assign(`${window.location.origin}/confirm-email`);
+        // window.location.assign(`${window.location.origin}/confirm-email`);
       }
     } catch (error: any) {
       setError(error.message);
@@ -201,5 +217,6 @@ export function useAuth(): UseAuthReturn {
     setPassword,
     setIsSignUpMode,
     clearError,
+    checkCurrentUserPlan
   };
 }

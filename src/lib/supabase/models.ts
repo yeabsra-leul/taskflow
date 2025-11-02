@@ -8,6 +8,7 @@ export interface Board {
   color: string;
   description: string | null;
   user_id: string;
+  workspace_id:string
 }
 
 export interface List {
@@ -41,3 +42,13 @@ export type User = Profile & {
   email: string;
   boards_created: number;
 };
+
+// supabase/models.ts
+export interface Workspace {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  created_by: string;
+}

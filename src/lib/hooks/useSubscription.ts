@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { UseSubscriptionReturn } from "@/types/subscription";
 
-export function useSubscription(): UseSubscriptionReturn {
+export function useSubscription() {
   const [error, setError] = useState<string | null>(null);
-  const manageSubscription = async (accessToken: string) => {
+
+  const manageSubscription = async (
+    accessToken: string,
+    plan: 'premium' | 'enterprise'
+  ) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-stripe-session`,
@@ -13,6 +16,7 @@ export function useSubscription(): UseSubscriptionReturn {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
+          body: JSON.stringify({ plan }),
         }
       );
 
@@ -27,7 +31,5 @@ export function useSubscription(): UseSubscriptionReturn {
     }
   };
 
-  return {
-    manageSubscription,
-  };
+  return { manageSubscription, error };
 }

@@ -10,10 +10,12 @@ import {
 } from "../services/services";
 import { useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 export function useBoards() {
   const { user } = useAuth();
   const { supabase } = useSupabase();
+  const {activeWorkspace} = useWorkspaceStore()
   const [boards, setBoards] = useState<Board[]>([]);
   const [loadingBoards, setLoadingBoards] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export function useBoards() {
     try {
       const newBoard = await boardDataService().createBoardWithList({
         supabase: supabase!,
-        board: { ...board, user_id: user?.user_id as string },
+        board: { ...board, user_id: user?.user_id as string, workspace_id:activeWorkspace?.id ?? "" }
       });
 
       setBoards((prev) => [newBoard, ...prev]);

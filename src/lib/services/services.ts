@@ -1,6 +1,60 @@
-import { ListWithTasks } from "./../supabase/models";
+import { Workspace } from "./../supabase/models";
 import { Board, List, Task } from "../supabase/models";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { callEdgeFunction } from "./helpers";
+
+
+
+export function workspaceService() {
+  const createWorkspace = async ({
+    supabase,
+    workspace
+  }: {
+    supabase: SupabaseClient;
+    workspace: Omit<Workspace, "id" | "created_at" | "updated_at">;
+  }): Promise<Workspace> => {
+    return callEdgeFunction<Workspace>(supabase, "create-workspace", workspace);
+  };
+  // GET WORKSPACES (only where user is a member)
+  const getWorkspaces = async ({
+    supabase,
+    userId,
+  }: {
+    supabase: SupabaseClient
+    userId: string
+  }): Promise<Workspace[]> => {
+    // 1. Get user's workspace memberships
+    const { data: memberships, error: memberError } = await supabase
+      .from('workspace_members')
+      .select('workspace_id')
+      .eq('user_id', userId)
+
+    if (memberError) {
+      throw new Error(`Failed to fetch memberships: ${memberError.message}`)
+    }
+
+    const workspaceIds = memberships?.map(m => m.workspace_id) || []
+
+    if (workspaceIds.length === 0) {
+      return []
+    }
+
+    // 2. Fetch only those workspaces
+    const { data: workspaces, error: wsError } = await supabase
+      .from('workspaces')
+      .select('*')
+      .in('id', workspaceIds)
+      .order('created_at', { ascending: false })
+
+    if (wsError) {
+      throw new Error(`Failed to fetch workspaces: ${wsError.message}`)
+    }
+
+    return workspaces || []
+  }
+
+  return { createWorkspace, getWorkspaces }
+}
 
 export function boardService() {
   const createBoard = async ({
@@ -10,17 +64,18 @@ export function boardService() {
     supabase: SupabaseClient;
     board: Omit<Board, "id" | "updated_at" | "created_at">;
   }): Promise<Board> => {
-    const { data, error } = await supabase
-      .from("boards")
-      .insert(board)
-      .select();
-    if (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error("Failed to create board");
-    }
-    return data[0];
+    // const { data, error } = await supabase
+    //   .from("boards")
+    //   .insert(board)
+    //   .select();
+    // if (error) {
+    //   if (error instanceof Error) {
+    //     throw error;
+    //   }
+    //   throw new Error("Failed to create board");
+    // }
+    // return data[0];
+    return callEdgeFunction<Board>(supabase, "create-board", board);
   };
 
   const getBoards = async ({

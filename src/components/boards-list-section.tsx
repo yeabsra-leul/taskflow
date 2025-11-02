@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import {
@@ -33,17 +33,22 @@ import { toast } from "sonner";
 import { LoadingSpinner } from "./ui/loading-spinner";
 import Link from "next/link";
 import { Board } from "@/lib/supabase/models";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 const BoardsListSection = () => {
+  const { user: currentUser, session } = useAuth();
+  const {activeWorkspace} = useWorkspaceStore()
   const [viewMode, setviewMode] = useState<"grid" | "list">("grid");
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const [isCreatingBoard, setCreatingBoard] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    color: "blue-500",
+    color: "#3b82f6",
   });
   const { createBoard, boards, loadingBoards } = useBoards();
   const [filters, setFilters] = useState({
@@ -57,9 +62,17 @@ const BoardsListSection = () => {
       max: null as number | null,
     },
   });
-  console.log("boards", boards);
+  console.log("freeee");
+  useEffect(() => {
+    console.log("freeee", currentUser);
+  }, []);
 
   const handleCreateBoard = async () => {
+    if (!canCreateBoard) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+
     setCreatingBoard(true);
     try {
       await createBoard({ board: formData });
@@ -69,6 +82,7 @@ const BoardsListSection = () => {
         color: "blue-500",
       });
       setCreateDialogOpen(false);
+      toast.success("Task created successfully.");
     } catch (error) {
       toast.error("Error creating board");
     } finally {
@@ -95,6 +109,9 @@ const BoardsListSection = () => {
   //   taskCount: 0, // This would need to be calculated from actual data
   // }));
 
+  const isFreeUser = currentUser?.subscription_plan === "free";
+  const canCreateBoard = !isFreeUser || boards.length < 1;
+
   const filteredBoards = boards.filter((board: Board) => {
     const matchesSearch = board.title
       .toLowerCase()
@@ -119,6 +136,11 @@ const BoardsListSection = () => {
             <div className="text-sm font-medium text-muted-foreground">
               Manage your projects and tasks
             </div>
+            {isFreeUser && (
+              <p className="text-sm text-gray-500 mt-1">
+                Free plan: {boards.length}/1 boards used
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col items-stretch sm:flex-row sm:items-center space-x-3 space-y-3 sm:space-y-0">
@@ -182,7 +204,7 @@ const BoardsListSection = () => {
       ) : viewMode == "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           {filteredBoards.map((board) => (
-            <Link key={board.id} href={`/boards/${board.id}`}>
+            <Link key={board.id} href={`/w/${activeWorkspace?.slug}/boards/${board.id}`}>
               <Card className="group overflow-hidden relative border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md">
                 {/* color */}
                 <div
@@ -249,7 +271,7 @@ const BoardsListSection = () => {
       ) : (
         <div className="flex flex-col gap-4 mt-8">
           {boards.map((board) => (
-            <Link key={board.id} href={`/boards/${board.id}`}>
+            <Link key={board.id} href={`/w/${activeWorkspace?.slug}/boards/${board.id}`}>
               <Card className="group relative overflow-hidden border-border hover:border-foreground/20 transition-all duration-200 hover:shadow-md cursor-pointer rounded-md py-3">
                 <div
                   className={`absolute left-0 top-0 bottom-0 w-[5] bg-${board.color}`}
@@ -524,6 +546,32 @@ const BoardsListSection = () => {
                 Apply Filters
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* upgrade to pro dialog */}
+      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <DialogContent className="w-[95vw] max-w-[425px] mx-auto">
+          <DialogHeader>
+            <DialogTitle>Upgrade to Create More Boards</DialogTitle>
+            <p className="text-sm text-gray-600">
+              Free users can only create one board. Upgrade to Pro or Enterprise
+              to create unlimited boards.
+            </p>
+          </DialogHeader>
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Link href="/pricing" className="no-underline cursor-pointer">
+              <Button>
+                View Plans
+              </Button>
+            </Link>
           </div>
         </DialogContent>
       </Dialog>

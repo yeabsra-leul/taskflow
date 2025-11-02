@@ -19,6 +19,7 @@ import {
 import { ThemeModeToggle } from "./theme-mode-toggle";
 import { useBoard } from "@/lib/hooks/useBoards";
 import { useParams } from "next/navigation";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 interface SideBarProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ const SideBarWrapper = ({ children }: SideBarProps) => {
   const params = useParams<{ id: string }>();
   const boardId = params.id;
   const { board } = useBoard({ boardId });
+  const { activeWorkspace } = useWorkspaceStore();
   // const [boardData, setboardData] = useState(board);
 
   // console.log("board from sidebar",board)
@@ -44,7 +46,9 @@ const SideBarWrapper = ({ children }: SideBarProps) => {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Boards</BreadcrumbLink>
+                  <BreadcrumbLink href={`/w/${activeWorkspace?.slug}`}>
+                    Boards
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 {board?.title && (
                   <>

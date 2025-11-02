@@ -14,7 +14,7 @@ export type Database = {
           user_id: string
           email: string | null
           name: string | null
-          subscription_plan: "free" | "premium" | null
+          subscription_plan: "free" | "premium" | "enterprise" | null
           boards_limit: number | null
           stripe_customer_id: string | null
           created_at: string | null
@@ -25,7 +25,7 @@ export type Database = {
           user_id: string
           email?: string | null
           name?: string | null
-          subscription_plan?: "free" | "premium" | null
+          subscription_plan?: "free" | "premium" | "enterprise" | null
           boards_limit?: number | null
           stripe_customer_id?: string | null
           created_at?: string | null
@@ -36,7 +36,7 @@ export type Database = {
           user_id?: string
           email?: string | null
           name?: string | null
-          subscription_plan?: "free" | "premium" | null
+          subscription_plan?: "free" | "premium" | "enterprise" | null
           boards_limit?: number | null
           stripe_customer_id?: string | null
           created_at?: string | null

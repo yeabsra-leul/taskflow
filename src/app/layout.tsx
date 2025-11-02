@@ -1,8 +1,11 @@
 import "./globals.css";
-import { SupabaseProvider } from "@/lib/supabase/SupabaseProvider";
+import {
+  SupabaseProvider,
+  SyncWorkspaceAndGuard,
+} from "@/lib/supabase/SupabaseProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { RouteGuard } from "@/components/RouteGuard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,7 +21,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SupabaseProvider>
-            <RouteGuard>{children}</RouteGuard>
+            <SyncWorkspaceAndGuard>{children}</SyncWorkspaceAndGuard>
           </SupabaseProvider>
           <Toaster richColors />
         </ThemeProvider>
