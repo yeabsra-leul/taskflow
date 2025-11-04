@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { User } from "../supabase/models";
 import { UseAuthReturn } from "@/types/auth";
 import { useSupabase } from "../supabase/SupabaseProvider";
-import { redirect } from "next/navigation";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useRouter } from "next/navigation";
 
 export function useAuth(): UseAuthReturn {
   const { supabase } = useSupabase();
@@ -18,6 +18,7 @@ export function useAuth(): UseAuthReturn {
   // State
   const [session, setSession] = useState<any>(null);
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -118,7 +119,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       console.log("✅ User logged in:", email);
-      redirect(`/w`);
+      router.push("/w")
     } catch (error: any) {
       setError(error.message);
       throw error;
