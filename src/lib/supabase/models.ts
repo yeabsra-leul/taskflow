@@ -33,6 +33,7 @@ export interface Task {
   assignee: string | null;
   list_id: string;
   board_id: string;
+  workspace_id: string;
 }
 
 // Database Models

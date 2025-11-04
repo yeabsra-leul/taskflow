@@ -59,6 +59,7 @@ import {
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
 import { Textarea } from "./ui/textarea";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
@@ -74,6 +75,7 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
   } = useBoard({
     boardId,
   });
+  const {activeWorkspace} = useWorkspaceStore()
   const [isCreateTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const [isCreateListDialogOpen, setCreateListDialogOpen] = useState(false);
   const [isEditListDialogOpen, setEditListDialogOpen] = useState(false);
@@ -121,7 +123,7 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     }
 
     try {
-      await createNewTask({ listId: targetList.id, boardId:boardId, taskData });
+      await createNewTask({ listId: targetList.id, boardId:boardId, workspaceId:activeWorkspace?.id || "", taskData });
       setCreateTaskDialogOpen(false);
     } catch (error) {
       toast.error("Error creating task");

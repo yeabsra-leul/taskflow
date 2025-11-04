@@ -115,9 +115,11 @@ export function useBoard({ boardId }: { boardId: string }) {
     listId,
     boardId,
     taskData,
+    workspaceId
   }: {
     listId: string;
     boardId: string;
+    workspaceId: string;
     taskData: {
       title: string;
       description?: string;
@@ -137,6 +139,7 @@ export function useBoard({ boardId }: { boardId: string }) {
           priority: taskData.priority || "medium",
           list_id: listId,
           board_id: boardId,
+          workspace_id: workspaceId,
           sort_order:
             lists.find((list) => list.id === listId)?.tasks.length || 0,
         },
