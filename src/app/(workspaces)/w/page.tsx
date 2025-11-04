@@ -117,7 +117,7 @@ export default function WorkspacesPage() {
         color: formData.color,
       });
       setActiveWorkspace(newWs);
-      toast.success("Workspace created!");
+      toast.success("Workspace created successfully!");
       setIsCreateOpen(false);
       setFormData({ name: "", color: "#3b82f6" });
     } catch (err) {
