@@ -251,6 +251,9 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     const taskId = active.id as string;
     const overId = over.id as string;
 
+    // snapshot of current lists to rollback if API fails
+    const previousLists = JSON.parse(JSON.stringify(lists));
+
     const targetList = lists.find((list) => list.id === overId);
 
     //if moving card to another list
@@ -260,11 +263,23 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
       );
 
       if (sourceList && sourceList.id !== targetList.id) {
-        await moveTask({
-          taskId,
-          toListId: targetList.id,
-          newOrder: targetList.tasks.length,
-        });
+        
+        // Optimistically update UI
+        const taskIndex = sourceList.tasks.findIndex((t) => t.id === taskId);
+        const [task] = sourceList.tasks.splice(taskIndex, 1);
+        targetList.tasks.push(task);
+        setLists([...lists]);
+
+        try {
+          await moveTask({
+            taskId,
+            toListId: targetList.id,
+            newOrder: targetList.tasks.length - 1,
+          });
+        } catch (err) {
+          toast.error("Failed to move task")
+          setLists(previousLists); // rollback to previous list 
+        }
       }
     } else {
       //move cards inside the same list
@@ -286,11 +301,22 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
         );
 
         if (oldIndex !== newIndex) {
-          await moveTask({
-            taskId,
-            toListId: targetList.id,
-            newOrder: newIndex,
-          });
+          
+          // Optimistic reorder
+          const [task] = sourceList.tasks.splice(oldIndex, 1);
+          targetList.tasks.splice(newIndex, 0, task);
+          setLists([...lists]);
+
+          try {
+            await moveTask({
+              taskId,
+              toListId: targetList.id,
+              newOrder: newIndex,
+            });
+          } catch (err) {
+            toast.error("Failed to move task")
+            setLists(previousLists); // rollback to previous list 
+          }
         }
       }
     }
