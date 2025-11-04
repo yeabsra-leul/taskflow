@@ -118,6 +118,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       console.log("✅ User logged in:", email);
+      redirect(`/w`);
     } catch (error: any) {
       setError(error.message);
       throw error;

@@ -51,7 +51,7 @@ export function SignupForm({
     try {
       await handleSignup();
       toast.success(
-        `Account created successfully.`
+        `Account created successfully. Please check your email (${email}) to verify your account.`,
       );
     } catch (er) {
       toast.error(error || "Error signing up");
