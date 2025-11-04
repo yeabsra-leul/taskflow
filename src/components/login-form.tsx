@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export function LoginForm({
   className,
@@ -130,10 +131,12 @@ export function LoginForm({
             </FieldGroup>
           </form>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="/auth-image.jpg"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              fill
+              priority
+              className="absolute inset-0 object-cover h-full w-full dark:brightness-[0.2] dark:grayscale"
             />
           </div>
         </CardContent>
