@@ -352,9 +352,9 @@ export default function WorkspacesPage() {
               />
             </div>
 
-            {/* board color selector */}
+            {/* workspace color selector */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium">Board Color</Label>
+              <Label className="text-sm font-medium">Workspace Color</Label>
               <div className="flex rounded-xl overflow-hidden shadow-lg border border-border">
                 {colorOptions.map((color, index) => (
                   <button
