@@ -165,7 +165,7 @@ export default function WorkspacesPage() {
             <div>
               <div className="flex items-center space-x-4">
                 <h1 className="text-3xl font-bold mb-2">Workspaces</h1>
-                <PlanBadge plan={"free"} />
+                <PlanBadge plan={user?.subscription_plan as any || "free"} />
               </div>
               <p className="text-muted-foreground">
                 Manage and organize your workspaces
@@ -418,7 +418,7 @@ export default function WorkspacesPage() {
         <DialogContent className="w-[95vw] max-w-[425px] mx-auto">
           <DialogHeader>
             <DialogTitle>Upgrade to Create More Workspaces</DialogTitle>
-            {checkCurrentUserPlan(user?.subscription_plan as any || "free") ? (
+            {checkCurrentUserPlan("free") ? (
               <p className="text-sm text-gray-600">
                 Free users can only create one workspace. Upgrade to Pro or
                 Enterprise to create more workspaces.
