@@ -418,7 +418,7 @@ export default function WorkspacesPage() {
         <DialogContent className="w-[95vw] max-w-[425px] mx-auto">
           <DialogHeader>
             <DialogTitle>Upgrade to Create More Workspaces</DialogTitle>
-            {checkCurrentUserPlan("free") ? (
+            {checkCurrentUserPlan(user?.subscription_plan as any || "free") ? (
               <p className="text-sm text-gray-600">
                 Free users can only create one workspace. Upgrade to Pro or
                 Enterprise to create more workspaces.
