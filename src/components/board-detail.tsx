@@ -121,7 +121,7 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     }
 
     try {
-      await createNewTask({ listId: targetList.id, taskData });
+      await createNewTask({ listId: targetList.id, boardId:boardId, taskData });
       setCreateTaskDialogOpen(false);
     } catch (error) {
       toast.error("Error creating task");

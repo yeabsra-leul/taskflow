@@ -32,6 +32,7 @@ export interface Task {
   sort_order: number;
   assignee: string | null;
   list_id: string;
+  board_id: string;
 }
 
 // Database Models

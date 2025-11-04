@@ -113,9 +113,11 @@ export function useBoard({ boardId }: { boardId: string }) {
 
   async function createNewTask({
     listId,
+    boardId,
     taskData,
   }: {
     listId: string;
+    boardId: string;
     taskData: {
       title: string;
       description?: string;
@@ -134,6 +136,7 @@ export function useBoard({ boardId }: { boardId: string }) {
           due_date: taskData.due_date || null,
           priority: taskData.priority || "medium",
           list_id: listId,
+          board_id: boardId,
           sort_order:
             lists.find((list) => list.id === listId)?.tasks.length || 0,
         },
