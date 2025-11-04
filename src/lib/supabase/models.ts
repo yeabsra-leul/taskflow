@@ -51,4 +51,5 @@ export interface Workspace {
   name: string;
   slug: string;
   created_by: string;
+  color:string;
 }

@@ -26,7 +26,7 @@ export interface AuthOperations {
   setPassword: (value: string) => void;
   setIsSignUpMode: (value: boolean) => void;
   clearError: () => void;
-  checkCurrentUserPlan: (plan: string) => boolean;
+  checkCurrentUserPlan: (plan: "free" | "premium" | "enterprise") => boolean;
 }
 
 export type UseAuthReturn = AuthState & AuthOperations;

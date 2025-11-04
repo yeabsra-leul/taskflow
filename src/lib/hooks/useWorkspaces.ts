@@ -11,6 +11,7 @@ export function useWorkspaces() {
   const { supabase } = useSupabase();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [creatingWorkspace, setCreatingWorkspace] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,19 +40,23 @@ export function useWorkspaces() {
   async function createWorkspace({
     name,
     slug,
+    color
   }: {
     name: string;
     slug: string;
+    color: string;
   }) {
     if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
+      setCreatingWorkspace(true);
       const newWorkspace = await workspaceService().createWorkspace({
         supabase,
         workspace: {
           name,
           slug,
           created_by: user.user_id,
+          color
         },
       });
 
@@ -59,8 +64,11 @@ export function useWorkspaces() {
       return newWorkspace;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create workspace";
+      console.log("Workspace creation error:", message);
       setError(message);
       throw new Error(message);
+    } finally {
+      setCreatingWorkspace(false);
     }
   }
 
@@ -69,6 +77,7 @@ export function useWorkspaces() {
     isLoadingWorkspaces:loading,
     error,
     createWorkspace,
+    creatingWorkspace,
     refresh: loadWorkspaces,
   };
 }

@@ -15,6 +15,7 @@ export function workspaceService() {
   }): Promise<Workspace> => {
     return callEdgeFunction<Workspace>(supabase, "create-workspace", workspace);
   };
+  
   // GET WORKSPACES (only where user is a member)
   const getWorkspaces = async ({
     supabase,

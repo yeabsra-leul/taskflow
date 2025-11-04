@@ -311,7 +311,7 @@ export default function LandingPage() {
                             <div className="h-3 w-3 rounded-full bg-green-500" />
                             <h3 className="font-semibold text-sm">Done</h3>
                             <span className="ml-auto text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                              5
+                              2
                             </span>
                           </div>
                           <div className="space-y-3">

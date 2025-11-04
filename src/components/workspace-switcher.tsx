@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Building, Building2, ChevronsUpDown, GalleryVerticalEnd, Plus } from "lucide-react";
+import {
+  Building,
+  Building2,
+  ChevronsUpDown,
+  GalleryVerticalEnd,
+  Plus,
+  Settings,
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -21,6 +28,7 @@ import {
 import { useWorkspaces } from "@/lib/hooks/useWorkspaces";
 import { useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
+import Link from "next/link";
 
 function WorkspaceButtonSkeleton() {
   return (
@@ -107,13 +115,15 @@ export function WorkspaceSwitcher() {
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">
-                Add workspace
-              </div>
+            <DropdownMenuItem className="gap-2 p-2 cursor-pointer" asChild>
+              <Link href={`/w`}>
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Settings className="size-4" />
+                </div>
+                <div className="text-muted-foreground font-medium">
+                  Manage workspaces
+                </div>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

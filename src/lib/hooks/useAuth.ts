@@ -34,14 +34,14 @@ export function useAuth(): UseAuthReturn {
 
   const fetchUserProfile = async (userId: string, userEmail: string) => {
     try {
-      const [profileResponse, usageResponse] = await Promise.all([
+      const [profileResponse] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", userId).single(),
-        supabase
-          .from("usage_tracking")
-          .select("boards_created")
-          .eq("user_id", userId)
-          .eq("year_month", new Date().toISOString().slice(0, 7))
-          .maybeSingle(),
+        // supabase
+        //   .from("usage_tracking")
+        //   .select("boards_created")
+        //   .eq("user_id", userId)
+        //   .eq("year_month", new Date().toISOString().slice(0, 7))
+        //   .maybeSingle(),
       ]);
 
       if (profileResponse.error) throw profileResponse.error;
@@ -49,7 +49,6 @@ export function useAuth(): UseAuthReturn {
       setUser({
         ...profileResponse.data,
         email: userEmail,
-        boards_created_created: usageResponse.data?.boards_created || 0,
       });
     } catch (error) {
       console.error("Critical error fetching user profile:", error);
@@ -59,7 +58,7 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  const checkCurrentUserPlan = (plan: string) => {
+  const checkCurrentUserPlan = (plan: "free" | "premium" | "enterprise") => {
     let subscriptionPlan: "free" | "premium" | "enterprise" | null = null;
 
     if (user) {
@@ -75,7 +74,7 @@ export function useAuth(): UseAuthReturn {
     setIsLoggedIn(!!newSession);
 
     if (newSession?.user) {
-      setIsLoading(true);
+      // setIsLoading(true); // fix later if causes flicker
       await fetchUserProfile(newSession.user.id, newSession.user.email);
     } else {
       setUser(null);
@@ -132,7 +131,7 @@ export function useAuth(): UseAuthReturn {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/w/${activeWorkspace?.slug}`,
+          redirectTo: `${window.location.origin}/w`,
         },
       });
     } catch (error: any) {
@@ -143,13 +142,13 @@ export function useAuth(): UseAuthReturn {
 
   const handleSignup = async () => {
     clearError();
-    setSigningUp(true);
+    setSigningUp(true); 
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { 
-          emailRedirectTo: `${window.location.origin}/w/${activeWorkspace?.slug}` 
+        options: {
+          emailRedirectTo: `${window.location.origin}/w`
         },
       });
 

@@ -29,15 +29,15 @@ export const callEdgeFunction = async <T = any>(
     
   })
 
-  const text = await res.text()
-  console.log('Edge Response:', res.status, text) // DEBUG
+  const data = await res.json()
+  console.log('Edge Response:', res.status, data.error) // DEBUG
 
   if (!res.ok) {
-    throw new Error(text || `Edge Function ${fn} failed`)
+    throw new Error(data.error || `Edge Function ${fn} failed`)
   }
 
   try {
-    return JSON.parse(text) as T
+    return data as T;
   } catch {
     throw new Error('Invalid JSON response')
   }

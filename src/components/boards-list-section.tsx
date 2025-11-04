@@ -35,6 +35,7 @@ import Link from "next/link";
 import { Board } from "@/lib/supabase/models";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { Skeleton } from "./ui/skeleton";
 
 const BoardsListSection = () => {
   const { user: currentUser, session } = useAuth();
@@ -110,7 +111,7 @@ const BoardsListSection = () => {
   // }));
 
   const isFreeUser = currentUser?.subscription_plan === "free";
-  const canCreateBoard = !isFreeUser || boards.length < 1;
+  const canCreateBoard = !isFreeUser || boards.length < 2;
 
   const filteredBoards = boards.filter((board: Board) => {
     const matchesSearch = board.title
@@ -136,10 +137,16 @@ const BoardsListSection = () => {
             <div className="text-sm font-medium text-muted-foreground">
               Manage your projects and tasks
             </div>
-            {isFreeUser && (
-              <p className="text-sm text-gray-500 mt-1">
-                Free plan: {boards.length}/1 boards used
-              </p>
+            {loadingBoards ? (
+              <div className="mt-3">
+                <Skeleton className="h-4 w-40" />
+              </div>
+            ) : (
+              isFreeUser && (
+                <p className="text-sm text-gray-500 mt-3">
+                  Free plan: {boards.length}/2 boards used
+                </p>
+              )
             )}
           </div>
 
