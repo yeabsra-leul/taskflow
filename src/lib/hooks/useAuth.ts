@@ -119,7 +119,6 @@ export function useAuth(): UseAuthReturn {
       }
 
       console.log("✅ User logged in:", email);
-      router.push("/w")
     } catch (error: any) {
       setError(error.message);
       throw error;

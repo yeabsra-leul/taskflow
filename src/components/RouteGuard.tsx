@@ -30,11 +30,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         // Redirect logged-in user from public route
         if (isLoadingWorkspaces) return; // Wait only if we need workspace info
 
-        if (workspaces.length === 0) {
-          router.replace("/workspaces");
-        } else {
-          router.replace(`/w/${workspaces[0].slug}`);
-        }
+        router.replace(`/w`);
         setShouldRender(false);
       } else {
         setShouldRender(true);
