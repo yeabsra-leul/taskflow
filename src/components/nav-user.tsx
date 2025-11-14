@@ -26,7 +26,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { SignOutButton } from "@clerk/nextjs";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Skeleton } from "./ui/skeleton";
 import { useSubscription } from "@/lib/hooks/useSubscription";

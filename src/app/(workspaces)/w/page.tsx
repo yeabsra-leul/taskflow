@@ -185,7 +185,7 @@ export default function WorkspacesPage() {
               </div>
               <Button
                 onClick={() => setIsCreateOpen(true)}
-                className="w-full sm:w-auto gap-2"
+                className="w-full sm:w-auto gap-2 cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
                 New Workspace
@@ -201,7 +201,7 @@ export default function WorkspacesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredWorkspaces.map((workspace) => (
               <motion.div key={workspace.id} variants={itemVariants}>
-                <Card className="h-auto hover:shadow-lg transition-all duration-300 overflow-hidden group relative backdrop-blur-2xl">
+                <Card className="h-auto hover:shadow-md transition-all duration-300 overflow-hidden group relative backdrop-blur-md rounded-md">
                   <div
                     className={`absolute top-4 right-4 w-40 h-40 opacity-10 transform translate-x-8 -translate-y-8 rounded-full blur-2xl`}
                     style={{

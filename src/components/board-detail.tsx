@@ -26,7 +26,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { DroppableList, SortableTask, TaskOverlay } from "./dnd-helpers";
 import { Badge } from "./ui/badge";
@@ -60,6 +60,7 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import { Textarea } from "./ui/textarea";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import CreateTaskWithAI from "./CreateTaskWithAI";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
@@ -75,7 +76,7 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
   } = useBoard({
     boardId,
   });
-  const {activeWorkspace} = useWorkspaceStore()
+  const { activeWorkspace } = useWorkspaceStore();
   const [isCreateTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const [isCreateListDialogOpen, setCreateListDialogOpen] = useState(false);
   const [isEditListDialogOpen, setEditListDialogOpen] = useState(false);
@@ -123,7 +124,12 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
     }
 
     try {
-      await createNewTask({ listId: targetList.id, boardId:boardId, workspaceId:activeWorkspace?.id || "", taskData });
+      await createNewTask({
+        listId: targetList.id,
+        boardId: boardId,
+        workspaceId: activeWorkspace?.id || "",
+        taskData,
+      });
       setCreateTaskDialogOpen(false);
     } catch (error) {
       toast.error("Error creating task");
@@ -263,7 +269,6 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
       );
 
       if (sourceList && sourceList.id !== targetList.id) {
-        
         // Optimistically update UI
         const taskIndex = sourceList.tasks.findIndex((t) => t.id === taskId);
         const [task] = sourceList.tasks.splice(taskIndex, 1);
@@ -277,8 +282,8 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
             newOrder: targetList.tasks.length - 1,
           });
         } catch (err) {
-          toast.error("Failed to move task")
-          setLists(previousLists); // rollback to previous list 
+          toast.error("Failed to move task");
+          setLists(previousLists); // rollback to previous list
         }
       }
     } else {
@@ -301,7 +306,6 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
         );
 
         if (oldIndex !== newIndex) {
-          
           // Optimistic reorder
           const [task] = sourceList.tasks.splice(oldIndex, 1);
           targetList.tasks.splice(newIndex, 0, task);
@@ -314,8 +318,8 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
               newOrder: newIndex,
             });
           } catch (err) {
-            toast.error("Failed to move task")
-            setLists(previousLists); // rollback to previous list 
+            toast.error("Failed to move task");
+            setLists(previousLists); // rollback to previous list
           }
         }
       }
@@ -512,7 +516,19 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
               )}
             </Button>
           </div>
-
+          <CreateTaskWithAI
+            onCreate={(newTask) => setLists((prev) =>
+              prev.map((list) =>
+                list.id == lists[0]?.id
+                  ? { ...list, tasks: [...list.tasks, newTask] }
+                  : list
+              )
+            )}
+            sort_order={lists[0]?.tasks?.length ?? 0}
+            list_id={lists[0]?.id ?? ""}
+            board_id={boardId}
+            workspace_id={activeWorkspace?.id ?? ""}
+          />
           <Button
             onClick={() => setCreateTaskDialogOpen(true)}
             className="cursor-pointer max-w-[540px]"

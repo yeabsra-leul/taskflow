@@ -83,7 +83,7 @@ const BoardsListSection = () => {
         color: "blue-500",
       });
       setCreateDialogOpen(false);
-      toast.success("Task created successfully.");
+      toast.success("Board created successfully.");
     } catch (error) {
       toast.error("Error creating board");
     } finally {
