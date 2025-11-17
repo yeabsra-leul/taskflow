@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, SparkleIcon } from "lucide-react";
+import { Loader2, SparkleIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useBoard } from "@/lib/hooks/useBoards";
 import { Task } from "@/lib/supabase/models";
@@ -81,7 +81,7 @@ export default function CreateTaskWithAI({
       <DialogTrigger asChild>
         <Button className="bg-indigo-600 hover:bg-indigo-700" size={"sm"}>
           Create with AI
-          <SparkleIcon className="ml-2 h-4 w-4" />
+          <Sparkles className="ml-2 h-4 w-4" />
         </Button>
       </DialogTrigger>
 

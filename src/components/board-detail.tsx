@@ -61,6 +61,7 @@ import { Skeleton } from "./ui/skeleton";
 import { Textarea } from "./ui/textarea";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import CreateTaskWithAI from "./CreateTaskWithAI";
+import FloatingChat from "./floating-chat";
 
 const BoardDetail = ({ boardId }: { boardId: string }) => {
   const {
@@ -889,6 +890,9 @@ const BoardDetail = ({ boardId }: { boardId: string }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+    {/* ai assistant chatbot */}
+    <FloatingChat />
     </div>
   );
 };

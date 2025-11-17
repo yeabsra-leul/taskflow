@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import BoardsListSection from "./boards-list-section";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
+import FloatingChat from "./floating-chat";
 
 const DashboardContent = () => {
   const { boards, error, loadingBoards } = useBoards();
@@ -117,6 +118,9 @@ const DashboardContent = () => {
       <BoardsListSection />
 
       {/* <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" /> */}
+
+      {/* ai assistant chatbot */}
+      <FloatingChat />
     </div>
   );
 };
