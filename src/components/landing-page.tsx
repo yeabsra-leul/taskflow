@@ -145,7 +145,7 @@ export default function LandingPage() {
           >
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm">
               <Sparkles className="h-3 w-3 mr-2 inline" />
-              New: Advanced Analytics Dashboard
+              New: AI powered task management features
             </Badge>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 text-balance">
               Project management
