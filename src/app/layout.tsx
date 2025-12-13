@@ -6,6 +6,11 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
+export const metadata = {
+  title: "Taskflow",
+  description: "An AI powered project management SaaS platfom built with Next.js, Supabase, Stripe, Vercel AI SDK and Langchain",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
