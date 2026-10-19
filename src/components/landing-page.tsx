@@ -12,6 +12,7 @@ import {
   Shield,
   BarChart3,
   Sparkles,
+  Brain
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
