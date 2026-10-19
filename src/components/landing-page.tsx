@@ -54,6 +54,12 @@ export default function LandingPage() {
       description:
         "Automate repetitive tasks and focus on what matters most to your team.",
     },
+    {
+      icon: Brain,
+      title: "AI Project Assistant",
+      description:
+        "Turn ideas into actionable tasks, generate project plans, and get AI-powered recommendations to keep work moving.",
+    },
   ];
 
   const stats = [
